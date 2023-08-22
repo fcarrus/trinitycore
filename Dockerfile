@@ -26,13 +26,14 @@ RUN apt-get update && \
       update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \
       update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang 100
 
-RUN useradd -m trinity -d /home/trinity
+COPY --from=builder /home/trinity/server/ /opt/trinitycore/
 
-COPY --from=builder /home/trinity/server/bin /home/trinity/server/bin
+RUN chown -R root:root /opt/trinitycore
 
-RUN chown -R trinity:trinity /home/trinity/
+RUN chmod -R 755 /opt/trinitycore
 
-USER trinity
+WORKDIR /opt/trinitycore
 
-WORKDIR /home/trinity
+CMD /bin/bash
+
 
