@@ -2,27 +2,33 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: trinitycore-config
-  namespace: trinity
+  namespace: trinitycore-master
   labels:
     app.kubernetes.io/part-of: trinitycore
 data:
-  authserver.conf: |
-    [authserver]
+  bnetserver.conf: |
+    [bnetserver]
     LogsDir = ""
     MaxPingTime = 30
-    RealmServerPort = 3724
+    BattlenetPort = 1119
+    LoginREST.Port = 8081
+    LoginREST.ExternalAddress=127.0.0.1
+    LoginREST.LocalAddress=127.0.0.1
+    LoginREST.TicketDuration=3600
     BindIP = "0.0.0.0"
     PidFile = ""
+    CertificatesFile = "./bnetserver.cert.pem"
+    PrivateKeyFile = "./bnetserver.key.pem"
+    PrivateKeyPassword = ""
     UseProcessors = 0
     ProcessPriority = 0
-    RealmsStateUpdateDelay = 20
+    RealmsStateUpdateDelay = 10
     WrongPass.MaxCount = 0
     WrongPass.BanTime = 600
     WrongPass.BanType = 0
     WrongPass.Logging = 0
-    StrictVersionCheck = 0
     BanExpiryCheckInterval = 60
-    SourceDirectory  = "/opt/trinitycore/TrinityCore"
+    SourceDirectory  = ""
     MySQLExecutable = ""
     IPLocationFile = ""
     AllowLoggingIPAddressesInDatabase = 1
@@ -31,14 +37,18 @@ data:
     LoginDatabase.SynchThreads  = 1
     TOTPMasterSecret =
     Updates.EnableDatabases = 0
-    Updates.AutoSetup   = 0
+    Updates.AutoSetup   = 1
     Updates.Redundancy  = 1
     Updates.ArchivedRedundancy = 0
     Updates.AllowRehash = 1
     Updates.CleanDeadRefMaxCount = 3
     Appender.Console=1,2,0
-    Appender.Auth=2,2,0,Auth.log,w
-    Logger.root=1,Console Auth
+    Appender.Bnet=2,2,0,Bnet.log,w
+    Logger.root=3,Console Bnet
+    Logger.realmlist=3,Console Bnet
+    Logger.session=3,Console Bnet
+    Logger.session.packets=3,Console Bnet
+    Logger.sql.updates=3,Console Bnet  
   worldserver.conf: |
     [worldserver]
     RealmID = 1

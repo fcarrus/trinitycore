@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: trinitycore-bnetserver
+  namespace: trinitycore-master
+  labels:
+    app.kubernetes.io/part-of: trinitycore
+spec:
+  ports:
+    - protocol: TCP
+      port: 1119
+      targetPort: 1119
+      nodePort: 31119
+  type: NodePort
+  selector:
+    app: trinitycore-bnetserver

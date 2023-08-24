@@ -2,7 +2,7 @@ kind: Job
 apiVersion: batch/v1
 metadata:
   name: trinitycore-db-setup
-  namespace: trinity
+  namespace: trinitycore-master
   labels:
     job-name: trinitycore-db-setup
     app.kubernetes.io/part-of: trinitycore

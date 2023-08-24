@@ -1,25 +1,22 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: trinitycore-worldserver
-  namespace: trinity
+  name: trinitycore-bnetserver
+  namespace: trinitycore-master
   labels:
     app.kubernetes.io/part-of: trinitycore
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
-      app: trinitycore-worldserver
+      app: trinitycore-bnetserver
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: trinitycore-worldserver
+        app: trinitycore-bnetserver
     spec:
       volumes:
-        - name: trinitydata
-          persistentVolumeClaim:
-            claimName: pvc-trinitydata
         - name: trinityconfig
           configMap:
             name: trinitycore-config
@@ -27,25 +24,19 @@ spec:
       containers:
         - resources: {}
           terminationMessagePath: /dev/termination-log
-          name: worldserver
+          name: bnetserver
           command:
-            - /opt/trinitycore/bin/worldserver
+            - /opt/trinitycore/bin/bnetserver
           ports:
-            - name: realmserver
-              containerPort: 8085
-              protocol: TCP
-            - name: remoteconsole
-              containerPort: 3443
+            - containerPort: 1119
               protocol: TCP
           imagePullPolicy: Always
           volumeMounts:
-            - name: trinitydata
-              mountPath: /wowdata
             - name: trinityconfig
               mountPath: /opt/trinitycore/etc
           terminationMessagePolicy: File
           image: >-
-            image-registry.openshift-image-registry.svc:5000/trinity/trinitycore:master
+            image-registry.openshift-image-registry.svc:5000/trinitycore-master/trinitycore:master
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst

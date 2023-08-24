@@ -2,7 +2,7 @@ kind: Job
 apiVersion: batch/v1
 metadata:
   name: trinitycore-extractor
-  namespace: trinity
+  namespace: trinitycore-master
   labels:
     job-name: trinitycore-extractor
     app.kubernetes.io/part-of: trinitycore
@@ -29,6 +29,7 @@ spec:
             - |
               set -eux
               cd /wowdata
+              rm -vrf Cameras dbc maps gt vmaps mmaps
               /opt/trinitycore/bin/mapextractor
               /opt/trinitycore/bin/vmap4extractor
               /opt/trinitycore/bin/vmap4assembler Buildings vmaps

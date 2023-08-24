@@ -2,11 +2,11 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: trinitycore-shell
-  namespace: trinity
+  namespace: trinitycore-master
   labels:
     app.kubernetes.io/part-of: trinitycore
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: trinitycore-shell
@@ -57,7 +57,7 @@ spec:
               mountPath: /opt/trinitycore/etc
           terminationMessagePolicy: File
           image: >-
-            image-registry.openshift-image-registry.svc:5000/trinity/trinitycore:master
+            image-registry.openshift-image-registry.svc:5000/trinitycore-master/trinitycore:master
         - name: osecli
           image: 'registry.redhat.io/openshift4/ose-cli:v4.12'
           command:

@@ -31,6 +31,8 @@ RUN cd TrinityCore && \
       cmake ../ -DSCRIPTS=static -DCMAKE_INSTALL_PREFIX=${TRINITYCORE_DIRECTORY} && \
       make -j4 install
 
+RUN rm -rf ${TRINITYCORE_DIRECTORY}/TrinityCore/sql/old
+
 FROM base as runtime
 
 ARG TRINITYCORE_BRANCH="master" 
@@ -40,6 +42,8 @@ ARG TRINITYCORE_TDB_RELEASE="TDB1015.23071/TDB_full_1015.23071_2023_07_14"
 ARG TRINITYCORE_DIRECTORY="/opt/trinitycore"
 
 COPY --from=builder ${TRINITYCORE_DIRECTORY}/bin/ ${TRINITYCORE_DIRECTORY}/bin/
+
+COPY --from=builder ${TRINITYCORE_DIRECTORY}/lib/ ${TRINITYCORE_DIRECTORY}/lib/
 
 COPY --from=builder ${TRINITYCORE_DIRECTORY}/TrinityCore/sql/ ${TRINITYCORE_DIRECTORY}/TrinityCore/sql/
 
