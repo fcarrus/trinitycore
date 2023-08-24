@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: trinitycore-worldserver
+  namespace: trinity
+  labels:
+    app.kubernetes.io/part-of: trinitycore
+spec:
+  ports:
+    - protocol: TCP
+      port: 8085
+      targetPort: 8085
+      nodePort: 32085
+  type: NodePort
+  selector:
+    app: trinitycore-worldserver

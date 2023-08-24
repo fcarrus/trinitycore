@@ -1,0 +1,74 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: trinitycore-db-setup
+  namespace: trinity
+  labels:
+    job-name: trinitycore-db-setup
+    app.kubernetes.io/part-of: trinitycore
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  template:
+    metadata:
+      name: db-setup
+      labels:
+        job-name: trinitycore-db-setup
+    spec:
+      containers:
+        - name: db-setup
+          image: 'quay.io/fcarrus/trinitycore:3.3.5'
+          command:
+            - /bin/bash
+            - '-c'
+            - |
+              echo "Deleting user and databases..."
+              MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql -uroot < /opt/trinitycore/TrinityCore/sql/create/drop_mysql_8.sql
+              echo "Creating user and databases..."
+              MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql -uroot <<SQL
+              CREATE USER IF NOT EXISTS 'trinity'@'%' IDENTIFIED BY 'trinity' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0;
+              GRANT USAGE ON *.* TO 'trinity'@'%';
+              CREATE DATABASE IF NOT EXISTS world DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+              CREATE DATABASE IF NOT EXISTS characters DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+              CREATE DATABASE IF NOT EXISTS auth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+              GRANT ALL PRIVILEGES ON world.* TO 'trinity'@'%' WITH GRANT OPTION;
+              GRANT ALL PRIVILEGES ON characters.* TO 'trinity'@'%' WITH GRANT OPTION;
+              GRANT ALL PRIVILEGES ON auth.* TO 'trinity'@'%' WITH GRANT OPTION;
+              SQL
+              echo "Loading database auth..."
+              mysql -utrinity auth < /opt/trinitycore/TrinityCore/sql/base/auth_database.sql
+              echo "Loading database characters..."
+              mysql -utrinity characters < /opt/trinitycore/TrinityCore/sql/base/characters_database.sql
+              echo "Uncompressing database world..."
+              cd /opt/trinitycore/TrinityCore
+              7zr x TDB*7z
+              echo "Loading database world..."
+              mysql -utrinity world < TDB*sql
+              echo "Finished."
+          env:
+            - name: MYSQL_HOST
+              value: trinitycore-db
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trinitycore-db
+                  key: database-user
+            - name: MYSQL_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: trinitycore-db
+                  key: database-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trinitycore-db
+                  key: database-root-password
+          imagePullPolicy: Always
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  completionMode: NonIndexed
+  suspend: false

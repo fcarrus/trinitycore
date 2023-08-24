@@ -1,0 +1,83 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: trinitycore-shell
+  namespace: trinity
+  labels:
+    app.kubernetes.io/part-of: trinitycore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trinitycore-shell
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: trinitycore-shell
+    spec:
+      volumes:
+        - name: trinitydata
+          persistentVolumeClaim:
+            claimName: pvc-trinitydata
+        - name: trinityconfig
+          configMap:
+            name: trinitycore-config
+            defaultMode: 420
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: trinity
+          command:
+            - sleep
+            - infinity
+          env:
+            - name: MYSQL_HOST
+              value: trinitycore-db
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: trinitycore-db
+                  key: database-user
+            - name: MYSQL_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: trinitycore-db
+                  key: database-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trinitycore-db
+                  key: database-root-password
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: trinitydata
+              mountPath: /wowdata
+            - name: trinityconfig
+              mountPath: /opt/trinitycore/etc
+          terminationMessagePolicy: File
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/trinity/trinitycore:master
+        - name: osecli
+          image: 'registry.redhat.io/openshift4/ose-cli:v4.12'
+          command:
+            - sleep
+            - infinity
+          resources: {}
+          volumeMounts:
+            - name: trinitydata
+              mountPath: /wowdata
+            - name: trinityconfig
+              mountPath: /opt/trinitycore/etc
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

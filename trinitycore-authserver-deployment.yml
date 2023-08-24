@@ -1,0 +1,48 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: trinitycore-authserver
+  namespace: trinity
+  labels:
+    app.kubernetes.io/part-of: trinitycore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trinitycore-authserver
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: trinitycore-authserver
+    spec:
+      volumes:
+        - name: trinityconfig
+          configMap:
+            name: trinitycore-config
+            defaultMode: 420
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: authserver
+          command:
+            - /opt/trinitycore/bin/authserver
+          ports:
+            - containerPort: 3724
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: trinityconfig
+              mountPath: /opt/trinitycore/etc
+          terminationMessagePolicy: File
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/trinity/trinitycore:master
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
