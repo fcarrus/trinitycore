@@ -36,7 +36,7 @@ spec:
               mountPath: /opt/trinitycore/etc
           terminationMessagePolicy: File
           image: >-
-            image-registry.openshift-image-registry.svc:5000/trinity/trinitycore:master
+            image-registry.openshift-image-registry.svc:5000/trinity/trinitycore:3.3.5
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
