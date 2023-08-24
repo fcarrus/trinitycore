@@ -1,0 +1,47 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: trinitycore-extractor
+  namespace: trinity
+  labels:
+    job-name: trinitycore-extractor
+    app.kubernetes.io/part-of: trinitycore
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  template:
+    metadata:
+      name: extractor
+      labels:
+        job-name: trinitycore-extractor
+    spec:
+      volumes:
+        - name: trinitydata
+          persistentVolumeClaim:
+              claimName: pvc-trinitydata
+      containers:
+        - name: extractor
+          image: 'quay.io/fcarrus/trinitycore:3.3.5'
+          command:
+            - /bin/bash
+            - '-c'
+            - |
+              set -eux
+              cd /wowdata
+              /opt/trinitycore/bin/mapextractor
+              /opt/trinitycore/bin/vmap4extractor
+              /opt/trinitycore/bin/vmap4assembler Buildings vmaps
+              /opt/trinitycore/bin/mmaps_generator
+
+          volumeMounts:
+            - mountPath: /wowdata
+              name: trinitydata
+          imagePullPolicy: Always
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  completionMode: NonIndexed
+  suspend: false

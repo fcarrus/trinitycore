@@ -1,0 +1,57 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: trinitycore-worldserver
+  namespace: trinity
+  labels:
+    app.kubernetes.io/part-of: trinitycore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trinitycore-worldserver
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: trinitycore-worldserver
+    spec:
+      volumes:
+        - name: trinitydata
+          persistentVolumeClaim:
+            claimName: pvc-trinitydata
+        - name: trinityconfig
+          configMap:
+            name: trinitycore-config
+            defaultMode: 420
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: worldserver
+          command:
+            - /opt/trinitycore/bin/worldserver
+          ports:
+            - name: realmserver
+              containerPort: 8085
+              protocol: TCP
+            - name: remoteconsole
+              containerPort: 3443
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: trinitydata
+              mountPath: /wowdata
+            - name: trinityconfig
+              mountPath: /opt/trinitycore/etc
+          terminationMessagePolicy: File
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/trinity/trinitycore:master
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
