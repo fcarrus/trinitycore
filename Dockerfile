@@ -4,7 +4,7 @@ RUN apt-get update && \
       apt-get install \
         --assume-yes \
         git clang cmake make gcc g++ libmysqlclient-dev \
-        libssl-dev libbz2-dev libreadline-dev libncurses-dev \
+        libssl-dev libbz2-dev mysql-client libreadline-dev libncurses-dev \
         libboost-all-dev p7zip telnet curl && \
       update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && \
       update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang 100
