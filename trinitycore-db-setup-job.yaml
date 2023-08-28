@@ -23,8 +23,15 @@ spec:
             - /bin/bash
             - '-c'
             - |
+              set -ux
               echo "Deleting user and databases..."
-              MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql -uroot < /opt/trinitycore/TrinityCore/sql/create/drop_mysql_8.sql
+              MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql -uroot <<SQL
+              REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'trinity'@'%';
+              DROP USER 'trinity'@'%';
+              DROP DATABASE IF EXISTS world;
+              DROP DATABASE IF EXISTS characters;
+              DROP DATABASE IF EXISTS auth;
+              SQL
               echo "Creating user and databases..."
               MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql -uroot <<SQL
               CREATE USER IF NOT EXISTS 'trinity'@'%' IDENTIFIED BY 'trinity' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0;
@@ -40,11 +47,9 @@ spec:
               mysql -utrinity auth < /opt/trinitycore/TrinityCore/sql/base/auth_database.sql
               echo "Loading database characters..."
               mysql -utrinity characters < /opt/trinitycore/TrinityCore/sql/base/characters_database.sql
-              echo "Uncompressing database world..."
               cd /opt/trinitycore/TrinityCore
-              7zr x TDB*7z
               echo "Loading database world..."
-              mysql -utrinity world < TDB*sql
+              7zr x -so TDB*7z TDB*world*sql | mysql -utrinity world
               echo "Finished."
           env:
             - name: MYSQL_HOST
